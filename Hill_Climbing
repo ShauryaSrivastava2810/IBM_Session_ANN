@@ -1,0 +1,64 @@
+import csv
+import random
+
+# Create a dictionary to store city coordinates
+cities = {}
+
+# Read city data from a CSV file
+with open(r"cities.csv.csv") as csvfile:
+    reader = csv.reader(csvfile)
+    next(reader)  # Skip the header row if it exists
+    for row in reader:
+        city_name, x, y = row
+        cities[city_name] = (float(x), float(y))
+
+# Define the starting and ending cities
+starting_city = 'DehraDun'  # Replace with your choice of starting city
+ending_city = 'Chennai'  # Replace with your choice of ending city
+
+# Ensure the starting and ending cities are in the list of cities
+if starting_city not in cities or ending_city not in cities:
+    raise ValueError("Starting or ending city not found in the city data.")
+
+# Create a list of cities to visit (excluding starting and ending cities)
+cities_to_visit = [city for city in cities.keys() if city != starting_city and city != ending_city]
+
+# Create a random initial tour
+random.shuffle(cities_to_visit)
+current_tour = [starting_city] + cities_to_visit + [ending_city]
+
+# Define a function to calculate the total tour distance
+def tour_distance(tour):
+    total_distance = 0
+    for i in range(len(tour) - 1):
+        city1 = tour[i]
+        city2 = tour[i + 1]
+        x1, y1 = cities[city1]
+        x2, y2 = cities[city2]
+        distance = ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5
+        total_distance += distance
+    return total_distance
+
+current_distance = tour_distance(current_tour)
+
+# Hill climbing loop
+while True:
+    # Generate a neighboring tour by swapping two cities (excluding starting and ending cities)
+    neighbor_tour = current_tour.copy()
+    i, j = random.sample(range(1, len(cities_to_visit)), 2)
+    neighbor_tour[i], neighbor_tour[j] = neighbor_tour[j], neighbor_tour[i]
+
+    # Calculate the distance of the neighboring tour
+    neighbor_distance = tour_distance(neighbor_tour)
+
+    # If the neighbor tour is better, accept it
+    if neighbor_distance < current_distance:
+        current_tour = neighbor_tour
+        current_distance = neighbor_distance
+        print(f"New tour: {current_tour}, Distance: {current_distance}")
+    else:
+        # If no better solution is found, terminate the loop
+        break
+
+print("Final tour:", current_tour)
+print("Final distance:", current_distance)
